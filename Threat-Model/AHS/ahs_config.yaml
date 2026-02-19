@@ -1,0 +1,37 @@
+# ahs_config.yaml
+risk_budget:
+  initial: 1.0
+  weights:
+    entropy: 0.25
+    state_change: 0.30
+    detectability: 0.25
+    reactivity: 0.20
+  mode_limits:
+    normal: 1.0
+    hardened: 0.8
+    adaptive: 0.6
+    deceptive: 0.4
+
+suspicion_model:
+  thresholds:
+    normal_determinism: 0.75
+    hardened_determinism: 0.65
+    adaptive_reactivity: 0.45
+    deceptive_manipulation: 0.60
+
+belief_weighting:
+  learning_rate: 0.18
+  stability_decay: 0.4
+  confidence_increment: 0.25
+
+noise_strategy:
+  delay_mean: 2.8
+  delay_std: 1.1
+  burst_max: 3
+  burst_window: 5.0
+
+abort_conditions:
+  risk_threshold: 0.15
+  instability_variance: 0.08
+  instability_stability: 0.35
+  deception_manipulation: 0.75

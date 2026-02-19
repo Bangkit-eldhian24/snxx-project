@@ -1,0 +1,54 @@
+┌───────────────────────────────────────────────────────────────┐
+│                    SNXX RUNTIME FLOW                          │
+├───────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Cognitive-Strata          Epistemic-Law                      │
+│  (Data Flow)               (Validation Rules)                 │
+│       │                           │                           │
+│       │                           │                           │
+│       ├──► Observation ──────────►│                           │
+│       ├──► Topology ─────────────►│                           │
+│       ├──► Epistemic ────────────►│                           │
+│       ├──► Reasoning ────────────►│                           │
+│       │                           │                           │
+│       └──► Security Semantics ────┼───► TVH ◄──────┐          │
+│                                   │      │         │          │
+│                                   │      │         │          │
+│                                   │      ▼         │          │
+│                         ┌─────────┴──────────┐     │          │
+│                         │       AHS          │     │          │
+│                         │  (Control Layer)   │─────┘          │
+│                         └────────────────────┘                │
+│                                   │                           │
+│                                   ▼                           │
+│                            Narrative Output                   │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+TVH Position:
+- Receives: SecuritySurfaceModel from Security Semantics Stratum
+- Produces: ThreatVectorSet (ranked, scored attack vectors)
+- Integrated with: AHS (for risk-weighted prioritization)
+- Feeds into: Narrative (human-readable threat brief)Isi:
+
+1. Purpose
+
+TVH (Threat Vector Hypothesis) adalah subsistem yang mengubah SecuritySurfaceModel menjadi ranked catalog of potential attack vectors berbasis arsitektur.
+TVH ≠ Vulnerability Scanner
+
+TVH tidak:
+
+    ❌ Mendeteksi CVE spesifik
+    ❌ Menghasilkan exploit payload
+    ❌ Melakukan vulnerability confirmation
+
+TVH hanya:
+
+    ✅ Mengidentifikasi structural weaknesses berbasis arsitektur
+    ✅ Me-rank vector berbasis likelihood × impact × feasibility
+    ✅ Memetakan vector ke manual testing procedures
+
+Philosophy:
+
+Architecture → Attack Surface → Threat Vector → Testing Strategy
+
+TVH adalah bridge antara "what we know about the system" dan "what pentester should test".

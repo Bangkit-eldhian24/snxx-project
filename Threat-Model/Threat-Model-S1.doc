@@ -1,0 +1,22 @@
+# ide - RAW
+aku sedikit belajar tentang hal isi dari http method dari pemakaian curl, api, dan endpoint
+saya sempat memunculkan sebuah ide. dmna ide untuk membuat alat. simple aja
+tools nya dapat mendeteksi framework pada website itu uptodate atau expired(vuln 100%)
+memberi tahu jenis framework yg di pakai nanti tinggal cari lib/pkg dari opensource lalu di jadikan 1>
+ini baru tahap pengembangan ide 1, blm kerangka sistem, alur sistem, cara kerja dll. pemahaman OOP
+
+# ide 2 - RAW
+design dulu, pertama perencanaan dan pemetakan. untuk coding aku bisa make ai agent
+untuk saat ini skala project ini kusus untuk "
+analisis framework web apa yg dia pakai mencakup versi framework itu
+penambahan api ai gemini cli 2.5 flash + api ai bebas
+namun karena ini berbasis CLI jadi hanya bisa berupa data text, misal kek GUI itu tools angkat tangan>
+data dari tools hasil scanning ( ini rencana nya ada beberapa opsi karena ini seperti nya sangat comp>
+ data dari pengalaman user / pentester, nanti dia akan memakai analogi nya dan pengalaman nya dalam m>
+untuk saat ini fokus pada suatu hal, mengingat aku blm belajar database apa yg di pakai dan memahami >
+setidak nya untuk saat ini project tau kearah mana untuk tahap awal ini tertuju, pada database? API n>
+gmna menurut mu?
+
+
+AHS
+ASG = ATTACK SURFACE GRAPH

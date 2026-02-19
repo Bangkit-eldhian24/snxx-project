@@ -1,0 +1,419 @@
+---
+
+# SNXX DSL — Grammar Definition
+
+**File:** `DSL/grammar.md`
+**Stage:** 1
+**Grammar Style:** Extended Backus–Naur Form (EBNF)
+**Scope:** Structural inference language (non-exploitative)
+
+---
+# increase
+```
+increase_action ::= "increase" IDENTIFIER "by" FLOAT
+```
+
+# Decrease
+```
+decrease_action ::= "decrease" IDENTIFIER "by" FLOAT
+```
+# Semantic Constraints
+* Closed World Assumption
+```
+signal/hypothesis tidak dideklarasikan
+```
+* Bayesian Guardrail
+```
+posterior ∈ (0, 1)
+posterior ≠ 1.0
+```
+* Layer Legality
+```
+mengubah hypothesis dari layer berbeda tanpa bridging evidence
+```
+contoh illegal
+```
+header.server (edge)
+→ directly increases auth.server_session (application)
+```
+* Deterministic Evaluation
+```
+once per cycle
+order independent
+```
+# Lexical Tokens
+```
+IDENTIFIER  ::= letter { letter | digit | "_" | "." }
+STRING      ::= '"' { any_char_except_quote } '"'
+FLOAT       ::= digit {digit} "." digit {digit}
+INT         ::= digit {digit}
+
+WS          ::= space | tab | newline
+```
+
+# Conditions
+```
+condition_list ::= condition { "and" condition }
+
+condition ::=
+      presence_condition
+    | absence_condition
+    | value_condition
+    | belief_condition
+```
+
+# Top Level Structure
+```
+program ::= { declaration | rule }
+```
+
+# Actions
+```
+action_list ::= action { action }
+
+action ::=
+      increase_action
+    | decrease_action
+```
+
+# 1. Design Principles
+
+Grammar harus:
+
+* Deterministic
+* Non-ambiguous
+* Declarative
+* Side-effect free
+* Machine-parseable
+* Non-Turing complete
+
+DSL bukan scripting language.
+DSL adalah rule declaration language.
+
+---
+
+# 2. File Structure
+
+```
+dsl_file         ::= { declaration }
+
+declaration      ::= signal_decl
+                   | hypothesis_decl
+                   | rule_decl
+                   | prior_decl
+```
+
+---
+
+# 3. Signal Declaration
+
+SIGNAL mendefinisikan vocabulary observasi.
+
+```
+signal_decl ::= "signal" IDENTIFIER ":" layer ";"
+
+layer ::= "edge"
+        | "gateway"
+        | "application"
+        | "auth"
+```
+
+### Example
+
+```
+signal header.server : edge;
+signal cookie.session_id : application;
+```
+
+---
+
+## 3.1 Layer Type
+
+```
+layer_type       ::= "edge"
+                   | "gateway"
+                   | "application"
+                   | "runtime"
+```
+
+Layer wajib satu dari taxonomy.
+
+---
+
+# 4. Hypothesis Declaration
+
+```
+hypothesis_decl ::=
+    "hypothesis" IDENTIFIER "{"
+        "layer:" layer ";"
+        "prior:" FLOAT ";"
+    "}"
+```
+
+### Example
+
+```
+hypothesis framework.nextjs {
+    layer: application;
+    prior: 0.20;
+}
+```
+
+Rules:
+
+* prior ∈ (0,1)
+* tidak boleh 0 atau 1
+* hypothesis tidak boleh dideklarasikan di RULE
+
+```
+rule ::=
+    "rule" IDENTIFIER "{"
+        "when" condition_list ";"
+        "then" action_list ";"
+    "}"
+```
+
+---
+
+# 5. Prior Update Declaration (Optional)
+
+```
+prior_decl       ::= "update_prior"
+                     identifier
+                     "to"
+                     float
+                     ";"
+```
+
+Digunakan untuk tuning global, bukan runtime.
+
+---
+
+# 6. Rule Declaration
+
+RULE adalah conditional probabilistic update.
+
+```
+rule_decl        ::= "rule" identifier
+                     "{"
+                     condition_block
+                     effect_block
+                     "}"
+```
+
+---
+
+## 6.1 Condition Block
+
+```
+condition_block  ::= "when" logical_expr ";"
+```
+
+---
+
+## 6.2 Logical Expression
+
+```
+logical_expr     ::= expression
+                   | logical_expr "and" expression
+                   | logical_expr "or" expression
+                   | "not" expression
+                   | "(" logical_expr ")"
+```
+
+---
+
+## 6.3 Expression Types
+
+```
+expression       ::= presence_expr
+                   | absence_expr
+                   | value_expr
+```
+
+---
+
+### Presence
+
+```
+presence_condition ::= "present" "(" IDENTIFIER ")"
+```
+
+---
+
+### Absence
+
+```
+absence_condition ::= "absent" "(" IDENTIFIER ")"
+```
+
+---
+
+### Value Match
+
+```
+value_condition ::= IDENTIFIER "contains" STRING
+```
+
+---
+
+## 6.4 Comparator
+
+```
+comparator       ::= "=="
+                   | "!="
+                   | "contains"
+                   | "matches"
+```
+
+---
+
+## 6.5 Literal
+
+```
+literal          ::= string
+                   | number
+```
+
+---
+
+# 7. Effect Block
+
+```
+effect_block     ::= "then"
+                     belief_update
+                     ";"
+```
+
+---
+
+## 7.1 Belief Update
+
+```
+belief_condition ::= IDENTIFIER comparator FLOAT
+
+comparator ::= ">" | "<" | ">=" | "<="
+
+```
+infrastructure.cdn > 0.50
+auth.server_session >= 0.40
+
+Rules:
+
+* identifier harus hypothesis
+* float ∈ (0,1)
+* cumulative belief capped < 1
+
+---
+
+# 8. Identifier
+
+```
+identifier       ::= letter { letter | digit | "." | "_" }
+```
+
+---
+
+# 9. Float
+
+```
+float            ::= digit { digit } "." digit { digit }
+```
+
+---
+
+# 10. Comments
+
+```
+comment          ::= "#" { any_char } newline
+```
+
+Parser wajib mengabaikan comment.
+
+---
+
+# 11. Determinism Constraints
+
+Grammar melarang:
+
+* nested rule
+* dynamic hypothesis creation
+* runtime variable binding
+* loops
+* function calls
+* arithmetic expressions
+* external references
+
+DSL harus static-declarative.
+
+---
+
+# 12. Example Valid Rule
+
+```
+rule detect_cloudflare {
+    when header.server contains "cloudflare"
+         or present(tls.certificate_issuer);
+    then increase infrastructure.cdn by 0.30;
+}
+```
+
+---
+
+# 13. Invalid Constructs
+
+Tidak diperbolehkan:
+
+```
+if (...)
+for (...)
+while (...)
+create hypothesis ...
+delete hypothesis ...
+execute ...
+```
+
+DSL bukan procedural.
+
+---
+
+# 14. Parsing Order
+
+1. Parse signal declarations
+2. Parse hypothesis declarations
+3. Validate priors
+4. Parse rules
+5. Validate references
+
+Rule referencing unknown signal/hypothesis → fatal error.
+
+---
+
+# 15. Runtime Behavior Contract
+
+Evaluator harus:
+
+* memproses RULE secara independen
+* tidak mengubah struktur DSL
+* hanya memodifikasi belief state
+* menjaga monotonic update (kecuali explicit decrease)
+
+---
+
+# 16. Stage-01 Limitation
+
+Grammar tidak mendukung:
+
+* temporal operators
+* cross-session memory
+* graph traversal
+* multi-layer propagation rules
+
+Itu akan ditambahkan pada Stage-02.
+
+---
+
+Dokumen grammar selesai.
+
+---
+
